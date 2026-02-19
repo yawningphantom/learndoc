@@ -6,135 +6,125 @@
     <title>LearnDoc - AI Learning</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
-        .container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
-        header { text-align: center; padding: 20px 0 40px; }
-        h1 { font-size: 2.5em; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
-        .tagline { color: #666; font-size: 1.1em; }
-        .status-bar { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .status-item { background: #1a1a1f; padding: 10px 16px; border-radius: 8px; font-size: 0.85em; }
-        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; margin-right: 6px; animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .input-section { margin: 30px 0; }
-        #topic { width: 100%; padding: 18px 20px; font-size: 18px; background: #111; border: 1px solid #333; border-radius: 12px; color: #e0e0e0; outline: none; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+        }
+        h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .tagline { color: #666; margin-bottom: 40px; }
+        .status { color: #22c55e; font-size: 0.9em; margin-bottom: 30px; }
+        #topic {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px 24px;
+            font-size: 20px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            color: #e0e0e0;
+            outline: none;
+            text-align: center;
+        }
         #topic:focus { border-color: #667eea; }
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .btn { padding: 12px 24px; background: #1a1a1f; border: 1px solid #333; border-radius: 8px; color: #e0e0e0; cursor: pointer; }
-        .btn:hover { background: #252530; border-color: #667eea; }
-        .btn.active { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; }
-        .output { background: #111; border: 1px solid #222; border-radius: 12px; padding: 28px; margin: 25px 0; min-height: 150px; white-space: pre-wrap; line-height: 1.8; display: none; }
-        .output.visible { display: block; }
-        .tabs { display: flex; gap: 5px; margin: 40px 0 20px; border-bottom: 1px solid #222; padding-bottom: 10px; }
-        .tab { padding: 10px 20px; background: transparent; border: none; color: #666; cursor: pointer; }
-        .tab:hover { color: #e0e0e0; }
-        .tab.active { color: #e0e0e0; background: #1a1a1f; }
-        .notes-list, .history-list { display: none; }
-        .notes-list.visible, .history-list.visible { display: block; }
-        .note-item { background: #111; border: 1px solid #222; border-radius: 8px; padding: 16px 20px; margin: 10px 0; }
-        .note-title { font-weight: 600; margin-bottom: 6px; }
-        .note-date { font-size: 12px; color: #555; }
-        .loading { display: none; text-align: center; padding: 50px; }
+        #topic::placeholder { color: #444; }
+        .loading { display: none; text-align: center; margin-top: 30px; }
         .loading.visible { display: block; }
-        .spinner { width: 36px; height: 36px; border: 3px solid #222; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        .spinner {
+            width: 30px; height: 30px;
+            border: 3px solid #222;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .empty-state { text-align: center; padding: 40px; color: #555; }
-        @media (max-width: 600px) { h1 { font-size: 2em; } .btn { padding: 10px 16px; font-size: 13px; } }
+        #output {
+            width: 100%;
+            max-width: 800px;
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 30px;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            display: none;
+        }
+        #output.visible { display: block; }
+        .notes-link {
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .notes-link a { color: #667eea; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📚 LearnDoc</h1>
-            <p class="tagline">AI-powered learning using Codex CLI</p>
-            <div class="status-bar">
-                <div class="status-item"><span class="status-dot"></span>Connected to: http://vps-bee9a696:5000</div>
-            </div>
-        </header>
-        
-        <div class="input-section">
-            <input type="text" id="topic" placeholder="What do you want to learn? (e.g., Docker, Rust, Python decorators)" />
-            <div class="btn-group">
-                <button class="btn active" onclick="setMode('explain')">📖 Explain</button>
-                <button class="btn" onclick="setMode('quiz')">🎯 Quiz</button>
-                <button class="btn" onclick="setMode('teach')">📚 Teach</button>
-                <button class="btn" onclick="setMode('test')">🧪 Test</button>
-                <button class="btn" onclick="setMode('summary')">📝 Summary</button>
-            </div>
-        </div>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Learning about <span id="loadingTopic"></span>...</p>
-        </div>
-        
-        <div class="output" id="output"></div>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('notes')">📁 Notes</button>
-            <button class="tab" onclick="showTab('history')">📅 History</button>
-        </div>
-        
-        <div class="notes-list visible" id="notesList">
-            <div class="empty-state">No notes yet. Learn something!</div>
-        </div>
-        
-        <div class="history-list" id="historyList">
-            <div class="empty-state">No history yet.</div>
-        </div>
+    <h1>📚 LearnDoc</h1>
+    <p class="tagline">What do you want to learn?</p>
+    <p class="status">● Connected to server</p>
+    
+    <input type="text" id="topic" placeholder="Type anything (e.g., Docker, Rust, Python...)" autofocus />
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p id="loadingText">Learning...</p>
     </div>
+    
+    <div id="output"></div>
+    
+    <p class="notes-link"><a href="#" onclick="showNotes(); return false;">View your notes</a></p>
     
     <script>
         const SERVER_URL = 'http://vps-bee9a696:5000';
-        let mode = 'explain';
-        let notes = JSON.parse(localStorage.getItem('learndoc_notes') || '[]');
-        let history = JSON.parse(localStorage.getItem('learndoc_history') || '[]');
-        
-        const prompts = {
-            explain: t => `Explain "${t}" clearly. Simple analogy, examples, summary.`,
-            quiz: t => `5-question quiz on "${t}". Multiple choice with answers.`,
-            teach: t => `Teach "${t}" as beginner. Concepts, example, terms, next steps.`,
-            test: t => `Test knowledge of "${t}" with 5 challenging questions.`,
-            summary: t => `Summarize "${t}". Key takeaways, overview, important terms.`
-        };
-        
-        function setMode(m) { mode = m; document.querySelectorAll('.btn-group .btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); }
-        function showTab(tab) { document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.notes-list, .history-list').forEach(t => t.classList.remove('visible')); event.target.classList.add('active'); document.getElementById(tab + 'List').classList.add('visible'); if (tab === 'notes') loadNotes(); }
-        
-        async function callAPI(prompt, topic, mode) {
-            const res = await fetch(SERVER_URL + '/learn', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({prompt, topic, mode}) });
-            return res.json();
-        }
-        
-        async function loadNotes() {
-            const res = await fetch(SERVER_URL + '/notes');
-            const data = await res.json();
-            const container = document.getElementById('notesList');
-            if (data.length === 0) { container.innerHTML = '<div class="empty-state">No notes yet.</div>'; return; }
-            container.innerHTML = data.map(n => `<div class="note-item"><div class="note-title">${n.topic}</div><div class="note-date">Click to view</div></div>`).join('');
-        }
         
         document.getElementById('topic').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter') {
                 const topic = e.target.value.trim();
                 if (!topic) return;
-                document.getElementById('loadingTopic').textContent = topic;
+                
                 document.getElementById('loading').classList.add('visible');
+                document.getElementById('loadingText').textContent = `Learning about ${topic}...`;
                 document.getElementById('output').classList.remove('visible');
+                document.getElementById('topic').value = '';
+                document.getElementById('topic').blur();
+                
                 try {
-                    const data = await callAPI(prompts[mode](topic), topic, mode);
+                    const prompt = `Explain "${topic}" clearly. Include:\n1. Simple analogy anyone can understand\n2. Practical examples\n3. Key takeaways summary`;
+                    
+                    const res = await fetch(SERVER_URL + '/learn', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({prompt, topic, mode: 'explain'})
+                    });
+                    
+                    const data = await res.json();
                     document.getElementById('output').textContent = data.response;
                     document.getElementById('output').classList.add('visible');
-                    notes.unshift({topic, mode, response: data.response, date: new Date().toISOString()});
-                    localStorage.setItem('learndoc_notes', JSON.stringify(notes));
-                    history.unshift({topic, mode, date: new Date().toISOString()});
-                    localStorage.setItem('learndoc_history', JSON.stringify(history));
-                    loadNotes();
-                } catch (err) { document.getElementById('output').textContent = 'Error: ' + err.message; document.getElementById('output').classList.add('visible'); }
+                } catch (err) {
+                    document.getElementById('output').textContent = 'Error: ' + err.message + '\n\nIs the server running?';
+                    document.getElementById('output').classList.add('visible');
+                }
+                
                 document.getElementById('loading').classList.remove('visible');
             }
         });
         
-        loadNotes();
+        function showNotes() {
+            alert('Notes are saved locally. Open server URL to view.');
+        }
     </script>
 </body>
 </html>
