@@ -1,37 +1,32 @@
 # LearnDoc
 
-AI-powered learning assistant — available as CLI and Web.
+AI-powered learning assistant — CLI and Web.
 
 ## 🌐 Web Version (GitHub Pages)
 
-**Live at:** https://yawningphantom.github.io/learndoc/
+**URL:** https://yawningphantom.github.io/learndoc/
 
-Features:
-- Learn, quiz, teach, test, summarize
-- Notes saved in localStorage
-- History tracking
-- All client-side (no backend needed)
+To enable:
+1. Go to https://github.com/yawningphantom/learndoc/settings/pages
+2. Select: **Deploy from a branch**
+3. Branch: **main** / (root)
+4. Click **Save**
 
-## 💻 CLI Version
+## 💻 CLI Version (uses local Codex)
 
 ```bash
-# Setup
-export ANTHROPIC_API_KEY='your-key'
-
-# Learn
+cd ~/learndoc
 python learn.py explain docker
 python learn.py quiz python
 python learn.py teach rust
 python learn.py test kubernetes
 python learn.py summary ml
-
-# Review
 python learn.py history
 python learn.py notes
 python learn.py search docker
 ```
 
-## Commands (CLI)
+## Features
 
 | Command | Description |
 |---------|-------------|
@@ -40,22 +35,25 @@ python learn.py search docker
 | `teach` | Structured lesson |
 | `test` | Interactive knowledge check |
 | `summary` | Key takeaways + terms |
-| `history` | Show learning history |
+| `history` | Track what you've learned |
 | `notes` | View saved markdown notes |
 | `search` | Search all notes |
+
+## Tech Stack
+
+- **Web:** Pure HTML/JS (static, no build)
+- **CLI:** Python + local Codex CLI
+- **Storage:** localStorage (web), filesystem (CLI)
 
 ## Files
 
 ```
 /
-├── index.html      # Web UI (GitHub Pages)
-├── learn.py       # CLI version
-├── learn          # CLI wrapper script
-└── README.md
+├── index.html           # Web UI (GitHub Pages)
+├── learn.py            # CLI (uses local codex)
+├── learn               # Shell wrapper
+├── README.md
+└── .github/
+    └── workflows/
+        └── pages.yml   # GitHub Pages deployment
 ```
-
-## Tech Stack
-
-- **Web:** Pure HTML/JS (no build needed)
-- **CLI:** Python + Anthropic API
-- **Storage:** localStorage (web), filesystem (CLI)
