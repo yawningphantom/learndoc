@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnDoc - AI Learning</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid #222;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 10px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tagline { color: #888; }
+        
+        /* API Key Section */
+        .api-section {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .api-section label { display: block; margin-bottom: 8px; color: #aaa; }
+        .api-section input {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+        }
+        .api-section button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        /* Main Input */
+        .input-section { margin: 30px 0; }
+        .topic-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            color: #e0e0e0;
+        }
+        .topic-input:focus { outline: none; border-color: #667eea; }
+        
+        /* Buttons */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+        .btn {
+            padding: 12px 24px;
+            background: #1a1a1f;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: #252530; border-color: #667eea; }
+        .btn.active { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; }
+        
+        /* Output */
+        .output {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            min-height: 200px;
+            white-space: pre-wrap;
+            line-height: 1.7;
+            display: none;
+        }
+        .output.visible { display: block; }
+        
+        /* Notes & History */
+        .tabs { display: flex; gap: 10px; margin: 30px 0; }
+        .tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab.active { color: #e0e0e0; border-color: #667eea; }
+        
+        .notes-list, .history-list {
+            display: none;
+        }
+        .notes-list.visible, .history-list.visible { display: block; }
+        
+        .note-item, .history-item {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .note-item:hover, .history-item:hover { border-color: #333; }
+        .note-title, .history-title { font-weight: 600; margin-bottom: 5px; }
+        .note-date, .history-date { font-size: 12px; color: #666; }
+        
+        /* Loading */
+        .loading { display: none; text-align: center; padding: 40px; }
+        .loading.visible { display: block; }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid #222;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Saved indicator */
+        .saved-indicator {
+            position: fixed; bottom: 20px; right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 10px 20px; border-radius: 8px;
+            display: none;
+        }
+        .saved-indicator.visible { display: block; animation: fadeOut 2s forwards; }
+        @keyframes fadeOut { 70% { opacity: 1; } 100% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 LearnDoc</h1>
+            <p class="tagline">AI-powered learning assistant</p>
+        </header>
+        
+        <!-- API Key -->
+        <div class="api-section">
+            <label>🔑 Anthropic API Key (stored locally, never sent anywhere else)</label>
+            <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
+        </div>
+        
+        <!-- Topic Input -->
+        <div class="input-section">
+            <input type="text" id="topic" class="topic-input" placeholder="What do you want to learn? (e.g., Docker, Rust ownership, Python decorators)" />
+            <div class="btn-group">
+                <button class="btn active" onclick="setMode('explain')">📖 Explain</button>
+                <button class="btn" onclick="setMode('quiz')">🎯 Quiz</button>
+                <button class="btn" onclick="setMode('teach')">📚 Teach</button>
+                <button class="btn" onclick="setMode('test')">🧪 Test</button>
+                <button class="btn" onclick="setMode('summary')">📝 Summary</button>
+            </div>
+        </div>
+        
+        <!-- Output -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Learning about <span id="loadingTopic"></span>...</p>
+        </div>
+        <div class="output" id="output"></div>
+        
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('notes')">📁 Notes</button>
+            <button class="tab" onclick="showTab('history')">📅 History</button>
+        </div>
+        
+        <!-- Notes -->
+        <div class="notes-list visible" id="notesList"></div>
+        
+        <!-- History -->
+        <div class="history-list" id="historyList"></div>
+    </div>
+    
+    <div class="saved-indicator" id="savedIndicator">💾 Saved!</div>
+    
+    <script>
+        let mode = 'explain';
+        let notes = JSON.parse(localStorage.getItem('learndoc_notes') || '[]');
+        let history = JSON.parse(localStorage.getItem('learndoc_history') || '[]');
+        
+        // Load API key
+        document.getElementById('apiKey').value = localStorage.getItem('learndoc_api_key') || '';
+        document.getElementById('apiKey').addEventListener('change', (e) => {
+            localStorage.setItem('learndoc_api_key', e.target.value);
+        });
+        
+        function setMode(m) {
+            mode = m;
+            document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.notes-list, .history-list').forEach(t => t.classList.remove('visible'));
+            event.target.classList.add('active');
+            document.getElementById(tab + 'List').classList.add('visible');
+        }
+        
+        async function callAnthropic(prompt) {
+            const apiKey = localStorage.getItem('learndoc_api_key');
+            if (!apiKey) throw new Error('API key required');
+            
+            const res = await fetch('https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model: 'claude-sonnet-4-20250514',
+                    max_tokens: 4096,
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+            
+            if (!res.ok) throw new Error('API error');
+            const data = await res.json();
+            return data.content[0].text;
+        }
+        
+        const prompts = {
+            explain: t => `Explain "${t}" in a clear, educational way. Start with a simple analogy, build up concepts, use examples, end with summary.`,
+            quiz: t => `Create a 5-question quiz on "${t}". Multiple choice with answers and brief explanations.`,
+            teach: t => `Teach me about "${t}" as a beginner. Include: 2-3 sentence intro, 3-5 core concepts, simple example, key terms, next steps.`,
+            test: t => `Test my knowledge of "${t}" with 5 challenging questions (not just recall, but application). Include answers.`,
+            summary: t => `Summarize "${t}" with: 3-5 key takeaways, 1 paragraph overview, 3-5 important terms.`
+        };
+        
+        document.getElementById('topic').addEventListener('keypress', async (e) => {
+            if (e.key === 'Enter') {
+                const topic = e.target.value.trim();
+                if (!topic) return;
+                
+                document.getElementById('loadingTopic').textContent = topic;
+                document.getElementById('loading').classList.add('visible');
+                document.getElementById('output').classList.remove('visible');
+                
+                try {
+                    const prompt = prompts[mode](topic);
+                    const response = await callAnthropic(prompt);
+                    
+                    document.getElementById('output').textContent = response;
+                    document.getElementById('output').classList.add('visible');
+                    
+                    // Save
+                    const note = { topic, mode, response, date: new Date().toISOString() };
+                    notes.unshift(note);
+                    localStorage.setItem('learndoc_notes', JSON.stringify(notes));
+                    
+                    history.unshift({ topic, mode, date: new Date().toISOString() });
+                    localStorage.setItem('learndoc_history', JSON.stringify(history));
+                    
+                    showSaved();
+                    renderNotes();
+                    renderHistory();
+                } catch (err) {
+                    document.getElementById('output').textContent = 'Error: ' + err.message;
+                    document.getElementById('output').classList.add('visible');
+                }
+                
+                document.getElementById('loading').classList.remove('visible');
+            }
+        });
+        
+        function showSaved() {
+            document.getElementById('savedIndicator').classList.add('visible');
+            setTimeout(() => document.getElementById('savedIndicator').classList.remove('visible'), 2000);
+        }
+        
+        function renderNotes() {
+            const container = document.getElementById('notesList');
+            container.innerHTML = notes.map(n => `
+                <div class="note-item" onclick="loadNote('${n.topic.replace(/'/g, "\\'")}')">
+                    <div class="note-title">${n.topic}</div>
+                    <div class="note-date">${new Date(n.date).toLocaleDateString()} • ${n.mode}</div>
+                </div>
+            `).join('') || '<p style="color:#666; text-align:center;">No notes yet. Learn something!</p>';
+        }
+        
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            container.innerHTML = history.map(h => `
+                <div class="history-item">
+                    <div class="history-title">${h.topic}</div>
+                    <div class="history-date">${new Date(h.date).toLocaleString()}</div>
+                </div>
+            `).join('') || '<p style="color:#666; text-align:center;">No history yet.</p>';
+        }
+        
+        function loadNote(topic) {
+            const note = notes.find(n => n.topic === topic);
+            if (note) {
+                document.getElementById('topic').value = note.topic;
+                document.getElementById('output').textContent = note.response;
+                document.getElementById('output').classList.add('visible');
+            }
+        }
+        
+        renderNotes();
+        renderHistory();
+    </script>
+</body>
+</html>
