@@ -3,127 +3,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LearnDoc - AI Learning</title>
+    <title>LearnDoc - AI Learning Platform</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0a0a0f;
-            color: #e0e0e0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 60px 20px;
-        }
-        h1 {
-            font-size: 3em;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-        .tagline { color: #666; margin-bottom: 40px; }
-        .status { color: #22c55e; font-size: 0.9em; margin-bottom: 30px; }
-        #topic {
-            width: 100%;
-            max-width: 600px;
-            padding: 20px 24px;
-            font-size: 20px;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            color: #e0e0e0;
-            outline: none;
-            text-align: center;
-        }
-        #topic:focus { border-color: #667eea; }
-        #topic::placeholder { color: #444; }
-        .loading { display: none; text-align: center; margin-top: 30px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+        .app { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; margin-bottom: 30px; }
+        h1 { font-size: 2em; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-secondary { background: #1a1a1f; color: #e0e0e0; border: 1px solid #333; }
+        .auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; }
+        .auth-screen h1 { font-size: 4em; margin-bottom: 20px; }
+        .auth-input { width: 300px; padding: 15px; font-size: 18px; background: #111; border: 1px solid #333; border-radius: 12px; color: #e0e0e0; margin-bottom: 15px; }
+        .main-app { display: none; }
+        .main-app.visible { display: block; }
+        .tabs-scroll { overflow-x: auto; padding-bottom: 10px; margin-bottom: 30px; }
+        .tabs { display: flex; gap: 10px; }
+        .tab { padding: 12px 24px; background: #1a1a1f; border: 1px solid #333; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+        .tab:hover { background: #252530; }
+        .tab.active { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; }
+        .add-tab { padding: 12px 20px; background: transparent; border: 1px dashed #444; border-radius: 8px; cursor: pointer; color: #666; }
+        .add-tab:hover { border-color: #667eea; color: #667eea; }
+        .topic-input { width: 100%; padding: 18px 24px; font-size: 20px; background: #111; border: 1px solid #333; border-radius: 12px; color: #e0e0e0; margin-bottom: 15px; }
+        .topic-input:focus { outline: none; border-color: #667eea; }
+        .mode-selector { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .mode-btn { padding: 12px 20px; background: #1a1a1f; border: 1px solid #333; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .mode-btn:hover { background: #252530; border-color: #444; }
+        .mode-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); border-color: transparent; }
+        .output { background: #111; border: 1px solid #222; border-radius: 12px; padding: 30px; margin-bottom: 30px; white-space: pre-wrap; line-height: 1.8; display: none; }
+        .output.visible { display: block; }
+        .loading { display: none; text-align: center; padding: 50px; }
         .loading.visible { display: block; }
-        .spinner {
-            width: 30px; height: 30px;
-            border: 3px solid #222;
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
+        .spinner { width: 40px; height: 40px; border: 3px solid #222; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #output {
-            width: 100%;
-            max-width: 800px;
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 12px;
-            padding: 30px;
-            margin-top: 30px;
-            white-space: pre-wrap;
-            line-height: 1.8;
-            display: none;
-        }
-        #output.visible { display: block; }
-        .notes-link {
-            margin-top: 40px;
-            color: #666;
-            font-size: 0.9em;
-        }
-        .notes-link a { color: #667eea; text-decoration: none; }
+        .learnings-section { margin-top: 40px; }
+        .learnings-section h3 { color: #666; margin-bottom: 20px; }
+        .learning-item { background: #111; border: 1px solid #222; border-radius: 8px; padding: 20px; margin-bottom: 15px; }
+        .learning-item .mode-badge { display: inline-block; padding: 4px 12px; background: #1a1a1f; border-radius: 20px; font-size: 12px; margin-bottom: 10px; }
+        .learning-item .content { margin-top: 10px; }
+        .learning-item .timestamp { font-size: 12px; color: #555; margin-top: 15px; }
+        @media (max-width: 768px) { .app { padding: 15px; } h1 { font-size: 1.5em; } }
     </style>
 </head>
 <body>
-    <h1>📚 LearnDoc</h1>
-    <p class="tagline">What do you want to learn?</p>
-    <p class="status">● Connected to server</p>
-    
-    <input type="text" id="topic" placeholder="Type anything (e.g., Docker, Rust, Python...)" autofocus />
-    
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p id="loadingText">Learning...</p>
+    <div class="app">
+        <div id="authScreen" class="auth-screen">
+            <h1>📚 LearnDoc</h1>
+            <p style="color: #666; margin-bottom: 40px;">Your AI-powered learning platform</p>
+            <input type="text" id="usernameInput" class="auth-input" placeholder="Enter your name" />
+            <button class="btn btn-primary" onclick="registerOrLogin()">Get Started</button>
+        </div>
+        
+        <div id="mainApp" class="main-app">
+            <header>
+                <h1>📚 LearnDoc</h1>
+                <div class="user-info">
+                    <span id="userDisplay" style="color: #666; margin-right: 10px;"></span>
+                    <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                </div>
+            </header>
+            
+            <div class="tabs-scroll">
+                <div class="tabs" id="tabsList">
+                    <div class="tab active" onclick="selectTab('general')" data-topic="general">📖 General</div>
+                    <div class="add-tab" onclick="showAddTopic()">+ New Topic</div>
+                </div>
+            </div>
+            
+            <div class="input-section">
+                <input type="text" id="topicInput" class="topic-input" placeholder="What do you want to learn? (e.g., Docker, Trigonometry...)" autofocus />
+                
+                <div class="mode-selector">
+                    <button class="mode-btn active" onclick="setMode('explain')" data-mode="explain"><span>📖</span> Explain</button>
+                    <button class="mode-btn" onclick="setMode('quiz')" data-mode="quiz"><span>🎯</span> Quiz</button>
+                    <button class="mode-btn" onclick="setMode('story')" data-mode="story"><span>📚</span> Story</button>
+                    <button class="mode-btn" onclick="setMode('project')" data-mode="project"><span>🛠️</span> Project</button>
+                    <button class="mode-btn" onclick="setMode('summary')" data-mode="summary"><span>📝</span> Summary</button>
+                </div>
+            </div>
+            
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p id="loadingText">Learning...</p>
+            </div>
+            
+            <div id="output" class="output"></div>
+            
+            <div class="learnings-section">
+                <h3 id="learningsTitle">📖 General Learnings</h3>
+                <div id="learningsList"></div>
+            </div>
+        </div>
     </div>
     
-    <div id="output"></div>
-    
-    <p class="notes-link"><a href="#" onclick="showNotes(); return false;">View your notes</a></p>
-    
     <script>
-        const SERVER_URL = 'http://vps-bee9a696:5000';
+        const API_URL = window.location.origin;
+        let currentUser = null;
+        let currentTab = 'general';
+        let currentMode = 'explain';
+        let topics = ['general'];
         
-        document.getElementById('topic').addEventListener('keypress', async (e) => {
+        function registerOrLogin() {
+            const username = document.getElementById('usernameInput').value.trim();
+            if (!username) return alert('Please enter your name');
+            fetch(API_URL + '/api/login', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username})
+            }).then(res => res.json()).then(data => {
+                currentUser = data.user;
+                localStorage.setItem('learndoc_user', JSON.stringify(currentUser));
+                showMainApp();
+            }).catch(e => alert('Error: ' + e.message));
+        }
+        
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('learndoc_user');
+            document.getElementById('authScreen').style.display = 'flex';
+            document.getElementById('mainApp').classList.remove('visible');
+        }
+        
+        function showMainApp() {
+            document.getElementById('authScreen').style.display = 'none';
+            document.getElementById('mainApp').classList.add('visible');
+            document.getElementById('userDisplay').textContent = currentUser.username;
+            loadTopics();
+        }
+        
+        async function loadTopics() {
+            try {
+                const res = await fetch(API_URL + '/api/topics?user_id=' + currentUser._id);
+                const data = await res.json();
+                topics = ['general', ...data.map(t => t.name)];
+                renderTabs();
+                loadLearnings();
+            } catch (e) { console.log('Could not load topics'); }
+        }
+        
+        function renderTabs() {
+            const container = document.getElementById('tabsList');
+            container.innerHTML = '';
+            topics.forEach(topic => {
+                const tab = document.createElement('div');
+                tab.className = 'tab' + (topic === currentTab ? ' active' : '');
+                tab.textContent = topic === 'general' ? '📖 General' : topic.charAt(0).toUpperCase() + topic.slice(1);
+                tab.onclick = () => selectTab(topic);
+                container.appendChild(tab);
+            });
+            const addTab = document.createElement('div');
+            addTab.className = 'add-tab';
+            addTab.textContent = '+ New Topic';
+            addTab.onclick = showAddTopic;
+            container.appendChild(addTab);
+        }
+        
+        function selectTab(topic) {
+            currentTab = topic;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[data-topic="${topic}"]`).classList.add('active');
+            document.getElementById('learningsTitle').textContent = topic === 'general' ? '📖 General Learnings' : `📁 ${topic.charAt(0).toUpperCase() + topic.slice(1)} Learnings`;
+            loadLearnings();
+        }
+        
+        function showAddTopic() {
+            const name = prompt('Enter topic name (e.g., Trigonometry, Docker):');
+            if (name) createTopic(name.trim());
+        }
+        
+        async function createTopic(name) {
+            try {
+                await fetch(API_URL + '/api/topics', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({user_id: currentUser._id, name})
+                });
+                topics.push(name);
+                selectTab(name);
+            } catch (e) { alert('Error: ' + e.message); }
+        }
+        
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+        }
+        
+        document.getElementById('topicInput').addEventListener('keypress', async (e) => {
             if (e.key === 'Enter') {
                 const topic = e.target.value.trim();
                 if (!topic) return;
-                
+                if (!topics.includes(topic.toLowerCase())) await createTopic(topic);
                 document.getElementById('loading').classList.add('visible');
                 document.getElementById('loadingText').textContent = `Learning about ${topic}...`;
                 document.getElementById('output').classList.remove('visible');
-                document.getElementById('topic').value = '';
-                document.getElementById('topic').blur();
-                
+                e.target.value = '';
                 try {
-                    const prompt = `Explain "${topic}" clearly. Include:\n1. Simple analogy anyone can understand\n2. Practical examples\n3. Key takeaways summary`;
-                    
-                    const res = await fetch(SERVER_URL + '/learn', {
+                    const res = await fetch(API_URL + '/api/learn', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({prompt, topic, mode: 'explain'})
+                        body: JSON.stringify({
+                            user_id: currentUser._id,
+                            topic: currentTab === 'general' ? topic : currentTab,
+                            sub_topic: currentTab === 'general' ? null : topic,
+                            prompt: generatePrompt(topic, currentMode),
+                            mode: currentMode
+                        })
                     });
-                    
                     const data = await res.json();
                     document.getElementById('output').textContent = data.response;
                     document.getElementById('output').classList.add('visible');
+                    loadLearnings();
                 } catch (err) {
-                    document.getElementById('output').textContent = 'Error: ' + err.message + '\n\nIs the server running?';
+                    document.getElementById('output').textContent = 'Error: ' + err.message;
                     document.getElementById('output').classList.add('visible');
                 }
-                
                 document.getElementById('loading').classList.remove('visible');
             }
         });
         
-        function showNotes() {
-            alert('Notes are saved locally. Open server URL to view.');
+        function generatePrompt(topic, mode) {
+            const prompts = {
+                explain: `Explain "${topic}" clearly. Include analogy, concepts, examples, summary.`,
+                quiz: `Create 5-question quiz on "${topic}" with answers and explanations.`,
+                story: `Teach "${topic}" through an engaging story with characters and scenarios.`,
+                project: `Create hands-on project to learn "${topic}". Include steps and expected outcomes.`,
+                summary: `Summarize "${topic}" with key concepts, terms, and learning path.`
+            };
+            return prompts[mode] || prompts.explain;
+        }
+        
+        async function loadLearnings() {
+            try {
+                const res = await fetch(API_URL + '/api/learnings?user_id=' + currentUser._id + '&topic=' + currentTab);
+                const data = await res.json();
+                const container = document.getElementById('learningsList');
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="color:#555;">No learnings yet. Start learning!</p>';
+                    return;
+                }
+                container.innerHTML = data.map(l => `
+                    <div class="learning-item">
+                        <span class="mode-badge">${getModeIcon(l.mode)} ${l.mode}</span>
+                        ${l.sub_topic ? `<strong>Sub-topic: ${l.sub_topic}</strong>` : ''}
+                        <div class="content">${l.response.substring(0, 300)}${l.response.length > 300 ? '...' : ''}</div>
+                        <div class="timestamp">${new Date(l.created_at).toLocaleString()}</div>
+                    </div>
+                `).join('');
+            } catch (e) { console.log('Could not load learnings'); }
+        }
+        
+        function getModeIcon(mode) {
+            return {explain: '📖', quiz: '🎯', story: '📚', project: '🛠️', summary: '📝'}[mode] || '📝';
+        }
+        
+        const savedUser = localStorage.getItem('learndoc_user');
+        if (savedUser) {
+            currentUser = JSON.parse(savedUser);
+            showMainApp();
         }
     </script>
 </body>
