@@ -153,7 +153,7 @@
         
         <!-- API Key -->
         <div class="api-section">
-            <label>🔑 Anthropic API Key (stored locally, never sent anywhere else)</label>
+            <label>🔑 OpenAI API Key (or Anthropic) (stored locally, never sent anywhere else)</label>
             <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
         </div>
         
@@ -215,16 +215,39 @@
             document.getElementById(tab + 'List').classList.add('visible');
         }
         
-        async function callAnthropic(prompt) {
+        async function callAI(prompt) {
             const apiKey = localStorage.getItem('learndoc_api_key');
             if (!apiKey) throw new Error('API key required');
             
-            const res = await fetch('https://api.anthropic.com/v1/messages', {
+            // Try OpenAI first, then Anthropic if that fails
+            try {
+                const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o',
+                        messages: [{ role: 'user', content: prompt }],
+                        max_tokens: 4096
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    return data.choices[0].message.content;
+                }
+            } catch (e) {
+                // Try Anthropic as fallback
+            }
+            
+            // Fallback to Anthropic
+            const res2 = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: {
                     'x-api-key': apiKey,
                     'anthropic-version': '2023-06-01',
-                    'content-type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     model: 'claude-sonnet-4-20250514',
@@ -233,8 +256,8 @@
                 })
             });
             
-            if (!res.ok) throw new Error('API error');
-            const data = await res.json();
+            if (!res2.ok) throw new Error('API error');
+            const data = await res2.json();
             return data.content[0].text;
         }
         
@@ -257,7 +280,7 @@
                 
                 try {
                     const prompt = prompts[mode](topic);
-                    const response = await callAnthropic(prompt);
+                    const response = await callAI(prompt);
                     
                     document.getElementById('output').textContent = response;
                     document.getElementById('output').classList.add('visible');
