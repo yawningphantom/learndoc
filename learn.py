@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 """
-LearnDoc - Simple AI learning wrapper around Claude/Codex
+LearnDoc - Learn using Codex CLI locally
 
 Usage:
-    python learn.py "explain docker containers"
-    python learn.py "quiz me on Python decorators"
-    python learn.py "teach me Rust ownership"
-    python learn.py "summarize my notes"
-    python learn.py "test me on kubernetes"
+    python learn.py explain docker
+    python learn.py quiz python decorators
+    python learn.py teach rust ownership
+    python learn.py test kubernetes
+    python learn.py summary machine learning
 """
 
 import os
 import sys
 import json
 from pathlib import Path
+import subprocess
 
 # Configuration
 NOTES_DIR = Path.home() / ".learndoc" / "notes"
 NOTES_DIR.mkdir(parents=True, exist_ok=True)
-
-# Simple history tracking
 HISTORY_FILE = Path.home() / ".learndoc" / "history.json"
 
 
@@ -40,77 +39,23 @@ def save_history(topic, action="learned"):
     HISTORY_FILE.write_text(json.dumps(history, indent=2))
 
 
-def call_claude(prompt):
-    """Call Claude API directly (placeholder - user needs API key)."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("❌ Error: Set ANTHROPIC_API_KEY environment variable")
-        print("   export ANTHROPIC_API_KEY='your-api-key'")
-        sys.exit(1)
-    
-    import requests
-    
-    headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    
-    data = {
-        "model": "claude-sonnet-4-20250514",
-        "max_tokens": 4096,
-        "messages": [{"role": "user", "content": prompt}]
-    }
-    
-    response = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers=headers,
-        json=data
-    )
-    
-    if response.status_code == 200:
-        return response.json()["content"][0]["text"]
-    else:
-        print(f"❌ API Error: {response.status_code}")
-        print(response.text)
-        sys.exit(1)
-
-
 def call_codex(prompt):
-    """Call Codex API directly (placeholder - user needs API key)."""
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        print("❌ Error: Set OPENAI_API_KEY environment variable")
-        sys.exit(1)
-    
-    import requests
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    data = {
-        "model": "gpt-4o",
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 4096
-    }
-    
-    response = requests.post(
-        "https://api.openai.com/v1/chat/completions",
-        headers=headers,
-        json=data
+    """Call Codex CLI directly."""
+    result = subprocess.run(
+        ["codex", "exec", prompt],
+        capture_output=True,
+        text=True,
+        timeout=120
     )
     
-    if response.status_code == 200:
-        return response.json()["choices"][0]["message"]["content"]
-    else:
-        print(f"❌ API Error: {response.status_code}")
+    if result.returncode != 0:
+        print(f"❌ Codex error: {result.stderr}")
         sys.exit(1)
+    
+    return result.stdout
 
 
 def cmd_explain(topic):
-    """Explain a topic clearly."""
     prompt = f"""Explain "{topic}" in a clear, educational way. 
 - Start with a simple analogy
 - Build up concepts gradually
@@ -119,14 +64,13 @@ def cmd_explain(topic):
 - Keep it concise but complete"""
     
     print(f"\n📚 Learning: {topic}\n" + "="*50)
-    response = call_claude(prompt)
+    response = call_codex(prompt)
     print(response)
     save_history(topic, "explained")
     save_note(topic, response)
 
 
 def cmd_quiz(topic):
-    """Quiz the user on a topic."""
     prompt = f"""Create a 5-question quiz on "{topic}".
 For each question:
 - Question number and text
@@ -142,13 +86,12 @@ Format:
 ANSWER: [Letter] - [Brief explanation]"""
     
     print(f"\n🎯 Quiz: {topic}\n" + "="*50)
-    response = call_claude(prompt)
+    response = call_codex(prompt)
     print(response)
     save_history(topic, "quizzed")
 
 
 def cmd_teach(topic):
-    """Teach a topic with structured lessons."""
     prompt = f"""Teach me about "{topic}" as if I'm a beginner.
 
 Structure:
@@ -162,14 +105,13 @@ Structure:
 Keep it practical and actionable."""
     
     print(f"\n📖 Teaching: {topic}\n" + "="*50)
-    response = call_claude(prompt)
+    response = call_codex(prompt)
     print(response)
     save_history(topic, "taught")
     save_note(topic, response)
 
 
 def cmd_test(topic):
-    """Interactive test on a topic."""
     prompt = f"""Test my knowledge of "{topic}" with 5 questions.
 
 For each question:
@@ -180,13 +122,12 @@ For each question:
 Questions should range from easy to hard."""
     
     print(f"\n🧪 Test: {topic}\n" + "="*50)
-    response = call_claude(prompt)
+    response = call_codex(prompt)
     print(response)
     save_history(topic, "tested")
 
 
 def cmd_summary(topic):
-    """Summarize a topic."""
     prompt = f"""Give me a comprehensive summary of "{topic}".
 
 Include:
@@ -198,13 +139,13 @@ Include:
 Be concise but complete."""
     
     print(f"\n📝 Summary: {topic}\n" + "="*50)
-    response = call_claude(prompt)
+    response = call_codex(prompt)
     print(response)
     save_history(topic, "summarized")
+    save_note(topic, response)
 
 
 def cmd_notes(topic=None):
-    """Show saved notes."""
     if topic:
         note_file = NOTES_DIR / f"{topic.lower().replace(' ', '_')}.md"
         if note_file.exists():
@@ -221,7 +162,6 @@ def cmd_notes(topic=None):
 
 
 def cmd_history():
-    """Show learning history."""
     history = load_history()
     if not history:
         print("\n📭 No learning history yet.")
@@ -239,8 +179,7 @@ def cmd_history():
     print()
 
 
-def cmd_history_clear():
-    """Clear learning history."""
+def cmd_clear():
     if HISTORY_FILE.exists():
         HISTORY_FILE.unlink()
         print("✅ History cleared")
@@ -249,7 +188,6 @@ def cmd_history_clear():
 
 
 def save_note(topic, content):
-    """Save a note."""
     filename = topic.lower().replace(' ', '_')[:50] + ".md"
     note_file = NOTES_DIR / filename
     from datetime import datetime
@@ -258,16 +196,7 @@ def save_note(topic, content):
     print(f"💾 Saved note: {note_file.name}")
 
 
-def cmd_import_notes():
-    """Import notes from a file or Obsidian vault."""
-    print("📥 Import Notes")
-    print("-"*30)
-    print("Feature coming soon!")
-    print("Will support: Obsidian vault, markdown files, text files")
-
-
 def cmd_search(topic):
-    """Search across all notes."""
     from datetime import datetime
     results = []
     for note_file in NOTES_DIR.glob("*.md"):
@@ -293,7 +222,6 @@ def main():
         print("  python learn.py test kubernetes")
         print("  python learn.py summary machine learning")
         print("  python learn.py notes")
-        print("  python learn.py notes python")
         print("  python learn.py history")
         print("  python learn.py search 'function'")
         sys.exit(1)
@@ -309,13 +237,12 @@ def main():
         "summary": cmd_summary,
         "notes": lambda t: cmd_notes(t) if t else cmd_notes(),
         "history": cmd_history,
-        "clear": cmd_history_clear,
-        "import": cmd_import_notes,
+        "clear": cmd_clear,
         "search": cmd_search,
     }
     
     if command in commands:
-        if command in ["notes", "history", "clear", "import"]:
+        if command in ["notes", "history", "clear"]:
             commands[command]()
         else:
             if not topic:
