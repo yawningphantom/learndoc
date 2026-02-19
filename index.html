@@ -43,7 +43,6 @@
         .learning-item .mode-badge { display: inline-block; padding: 4px 12px; background: #1a1a1f; border-radius: 20px; font-size: 12px; margin-bottom: 10px; }
         .learning-item .content { margin-top: 10px; }
         .learning-item .timestamp { font-size: 12px; color: #555; margin-top: 15px; }
-        @media (max-width: 768px) { .app { padding: 15px; } h1 { font-size: 1.5em; } }
     </style>
 </head>
 <body>
@@ -72,7 +71,7 @@
             </div>
             
             <div class="input-section">
-                <input type="text" id="topicInput" class="topic-input" placeholder="What do you want to learn? (e.g., Docker, Trigonometry...)" autofocus />
+                <input type="text" id="topicInput" class="topic-input" placeholder="What do you want to learn?" autofocus />
                 
                 <div class="mode-selector">
                     <button class="mode-btn active" onclick="setMode('explain')" data-mode="explain"><span>📖</span> Explain</button>
@@ -98,7 +97,7 @@
     </div>
     
     <script>
-        const API_URL = "https://brown-owls-knock.loca.lt";
+        const API_URL = window.location.origin;
         let currentUser = null;
         let currentTab = 'general';
         let currentMode = 'explain';
@@ -162,13 +161,13 @@
         function selectTab(topic) {
             currentTab = topic;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelector(`[data-topic="${topic}"]`).classList.add('active');
-            document.getElementById('learningsTitle').textContent = topic === 'general' ? '📖 General Learnings' : `📁 ${topic.charAt(0).toUpperCase() + topic.slice(1)} Learnings`;
+            document.querySelector('[data-topic="' + topic + '"]').classList.add('active');
+            document.getElementById('learningsTitle').textContent = topic === 'general' ? '📖 General Learnings' : '📁 ' + topic.charAt(0).toUpperCase() + topic.slice(1) + ' Learnings';
             loadLearnings();
         }
         
         function showAddTopic() {
-            const name = prompt('Enter topic name (e.g., Trigonometry, Docker):');
+            const name = prompt('Enter topic name:');
             if (name) createTopic(name.trim());
         }
         
@@ -187,7 +186,7 @@
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
+            document.querySelector('[data-mode="' + mode + '"]').classList.add('active');
         }
         
         document.getElementById('topicInput').addEventListener('keypress', async (e) => {
@@ -196,7 +195,7 @@
                 if (!topic) return;
                 if (!topics.includes(topic.toLowerCase())) await createTopic(topic);
                 document.getElementById('loading').classList.add('visible');
-                document.getElementById('loadingText').textContent = `Learning about ${topic}...`;
+                document.getElementById('loadingText').textContent = 'Learning about ' + topic + '...';
                 document.getElementById('output').classList.remove('visible');
                 e.target.value = '';
                 try {
@@ -225,11 +224,11 @@
         
         function generatePrompt(topic, mode) {
             const prompts = {
-                explain: `Explain "${topic}" clearly. Include analogy, concepts, examples, summary.`,
-                quiz: `Create 5-question quiz on "${topic}" with answers and explanations.`,
-                story: `Teach "${topic}" through an engaging story with characters and scenarios.`,
-                project: `Create hands-on project to learn "${topic}". Include steps and expected outcomes.`,
-                summary: `Summarize "${topic}" with key concepts, terms, and learning path.`
+                explain: 'Explain "' + topic + '" clearly. Include analogy, concepts, examples, summary.',
+                quiz: 'Create 5-question quiz on "' + topic + '" with answers and explanations.',
+                story: 'Teach "' + topic + '" through an engaging story with characters and scenarios.',
+                project: 'Create hands-on project to learn "' + topic + '". Include steps and expected outcomes.',
+                summary: 'Summarize "' + topic + '" with key concepts, terms, and learning path.'
             };
             return prompts[mode] || prompts.explain;
         }
@@ -243,14 +242,7 @@
                     container.innerHTML = '<p style="color:#555;">No learnings yet. Start learning!</p>';
                     return;
                 }
-                container.innerHTML = data.map(l => `
-                    <div class="learning-item">
-                        <span class="mode-badge">${getModeIcon(l.mode)} ${l.mode}</span>
-                        ${l.sub_topic ? `<strong>Sub-topic: ${l.sub_topic}</strong>` : ''}
-                        <div class="content">${l.response.substring(0, 300)}${l.response.length > 300 ? '...' : ''}</div>
-                        <div class="timestamp">${new Date(l.created_at).toLocaleString()}</div>
-                    </div>
-                `).join('');
+                container.innerHTML = data.map(l => '<div class="learning-item"><span class="mode-badge">' + getModeIcon(l.mode) + ' ' + l.mode + '</span>' + (l.sub_topic ? '<strong>Sub-topic: ' + l.sub_topic + '</strong>' : '') + '<div class="content">' + l.response.substring(0, 300) + (l.response.length > 300 ? '...' : '') + '</div><div class="timestamp">' + new Date(l.created_at).toLocaleString() + '</div></div>').join('');
             } catch (e) { console.log('Could not load learnings'); }
         }
         
